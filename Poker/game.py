@@ -1,4 +1,3 @@
-
 import random
 from itertools import combinations
 import time
@@ -167,16 +166,28 @@ class HandEvaluator:
         else:
             return (HAND_RANKS["High Card"], self.sort_high_card(self.hand))
     
-    def get_best_hand(self, community_cards):
-        # Bepaal alle mogelijke combinaties van de hand van de speler en de community cards
-        all_possible_hands = combinations(self.hand + community_cards, 5)
+    def get_hand_rank(self, hand=None):
+        if hand is None:
+            hand = self.hand
+        else:
+            # Als een specifieke hand wordt meegegeven, sorteer deze en bepaal de ranks en suits opnieuw
+            hand = sorted(hand, key=lambda card: Card.card_value(card.value), reverse=True)
+        ranks = [Card.card_value(card.value) for card in hand]
+        suits = [card.suit for card in hand]
 
-        # Bepaal de beste hand en handrang op basis van de handrang
-        best_hand = max(all_possible_hands, key=lambda cards: (self.get_hand_rank()[0], cards))
-        best_hand_rank = self.get_hand_rank()[0]
+        rank_counts = collections.Counter(ranks)
+        sorted_ranks = sorted(ranks, key=lambda x: (rank_counts[x], x), reverse=True)
 
-        return best_hand, best_hand_rank
-        
+        is_flush = len(set(suits)) == 1
+        is_straight = self.is_sequence(sorted_ranks)
+
+        # Hier volgt de bestaande logica om de hand rank te bepalen...
+        if is_flush and is_straight:
+            # Enzovoort voor de rest van de hand type bepalingen...
+
+        # Zorg ervoor dat je de hand rank en de gesorteerde hand teruggeeft
+            return best_rank, sorted_hand
+    
     # Je sorteermethoden hieronder (ik zal er een paar demonstreren):
     def sort_straight_flush(self, hand):
         # Bij straight flushes willen we gewoon de kaarten sorteren op waarde
@@ -257,20 +268,23 @@ def find_and_print_sorted_best_hands(players, community_cards):
     best_hands = []
     for player in players:
         best_hand, best_hand_rank = player.get_best_hand(community_cards)
-        best_hands.append((player, best_hand, best_hand_rank))
+        # Sorteer de kaarten in de hand om vergelijkingen op basis van waarde te vergemakkelijken
+        sorted_best_hand = sorted(best_hand, key=lambda card: Card.card_value(card.value), reverse=True)
+        best_hands.append((player, sorted_best_hand, best_hand_rank))
 
-    best_hands.sort(key=lambda x: x[2], reverse=True)
+    # Sorteer eerst op handrang, dan op de individuele kaartwaarden binnen de hand
+    best_hands.sort(key=lambda x: (x[2], [Card.card_value(card.value) for card in x[1]]), reverse=True)
 
     max_name_length = max(len(player.name) for player, _, _ in best_hands)
     max_hand_type_length = max(len(hand_type) for hand_type, _ in HAND_RANKS.items())
 
-    for index, (player, _, best_rank) in enumerate(best_hands, start=1):
+    for index, (player, best_hand, best_rank) in enumerate(best_hands, start=1):
         hand_type = [k for k, v in HAND_RANKS.items() if v == best_rank][0]
         name_padded = player.name.ljust(max_name_length)
         hand_type_padded = hand_type.ljust(max_hand_type_length)
-        sorted_best_hand = ", ".join(card_to_string(card) for card in best_hand)
+        sorted_best_hand_str = ", ".join(card_to_string(card) for card in best_hand)
         best_hands[index - 1] += (index,)
-        print(f"{index}. {name_padded} {hand_type_padded} {sorted_best_hand}")
+        print(f"{index}. {name_padded} {hand_type_padded} {sorted_best_hand_str}")
 
     return best_hands
 
@@ -361,4 +375,3 @@ if __name__ == "__main__":
 # Voeg een lege regel toe aan het einde van het bestand
 if writer is not None:
     writer.sheets['Sheet1'].append([''] * len(round_results.columns))
-            

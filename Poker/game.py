@@ -166,6 +166,9 @@ class HandEvaluator:
         else:
             return (HAND_RANKS["High Card"], self.sort_high_card(self.hand))
     
+class HandEvaluator:
+    # ... andere methoden ...
+
     def get_hand_rank(self, hand=None):
         if hand is None:
             hand = self.hand
@@ -183,11 +186,14 @@ class HandEvaluator:
 
         # Hier volgt de bestaande logica om de hand rank te bepalen...
         if is_flush and is_straight:
+            
             # Enzovoort voor de rest van de hand type bepalingen...
 
         # Zorg ervoor dat je de hand rank en de gesorteerde hand teruggeeft
             return best_rank, sorted_hand
+
     
+
     # Je sorteermethoden hieronder (ik zal er een paar demonstreren):
     def sort_straight_flush(self, hand):
         # Bij straight flushes willen we gewoon de kaarten sorteren op waarde

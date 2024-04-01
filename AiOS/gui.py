@@ -1,4 +1,5 @@
 import tkinter as tk
+from connect import chat_with_gpt
 
 def send_message(event=None):
     user_input = input_entry.get()
